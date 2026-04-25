@@ -40,6 +40,44 @@ const formatCertificateType = (value) => {
   return "Participation";
 };
 
+const getDateOnlyKey = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+};
+
+const isEventRegistrationOpen = (event) => {
+  const todayKey = getDateOnlyKey(new Date());
+  const startKey = getDateOnlyKey(event.registrationStartDate);
+  const endKey = getDateOnlyKey(event.registrationEndDate);
+
+  if (!["open", "ongoing"].includes(event.status)) {
+    return false;
+  }
+
+  if (startKey && todayKey < startKey) {
+    return false;
+  }
+
+  if (endKey && todayKey > endKey) {
+    return false;
+  }
+
+  return true;
+};
+
 const statusStyles = {
   registered: "bg-blue-50 text-blue-700 border-blue-200",
   participated: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -364,7 +402,7 @@ export default function ParticipantDashboard() {
 
   const filteredEvents = useMemo(() => {
     return events.filter((event) => {
-      const isAvailable = ["open", "ongoing"].includes(event.status);
+      const isAvailable = isEventRegistrationOpen(event);
       const matchesSearch = event.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesType = typeFilter === "all" || event.eventType === typeFilter;
       return isAvailable && matchesSearch && matchesType;

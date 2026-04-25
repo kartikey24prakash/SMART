@@ -1,24 +1,7 @@
 import Event from "../model/Event.js";
 import Registration from "../model/Registration.js";
 import Team from "../model/Team.js";
-
-const isRegistrationOpen = (event) => {
-  const now = new Date();
-
-  if (event.status && !["open", "ongoing"].includes(event.status)) {
-    return false;
-  }
-
-  if (event.registrationStartDate && now < new Date(event.registrationStartDate)) {
-    return false;
-  }
-
-  if (event.registrationEndDate && now > new Date(event.registrationEndDate)) {
-    return false;
-  }
-
-  return true;
-};
+import { isRegistrationOpen } from "../utils/eventDates.js";
 
 export const createRegistration = async (req, res, next) => {
   try {

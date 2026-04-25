@@ -1,25 +1,8 @@
 import Event from "../model/Event.js";
 import Team from "../model/Team.js";
 import User from "../model/User.js";
+import { isRegistrationOpen } from "../utils/eventDates.js";
 import { validateTeamAgainstEvent } from "../utils/teamValidation.js";
-
-const isRegistrationOpen = (event) => {
-  const now = new Date();
-
-  if (event.status && !["open", "ongoing"].includes(event.status)) {
-    return false;
-  }
-
-  if (event.registrationStartDate && now < new Date(event.registrationStartDate)) {
-    return false;
-  }
-
-  if (event.registrationEndDate && now > new Date(event.registrationEndDate)) {
-    return false;
-  }
-
-  return true;
-};
 
 export const searchParticipantsByStudentId = async (req, res, next) => {
   try {

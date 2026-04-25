@@ -58,6 +58,7 @@ export default function EventConfiguration({
   }
 
   const statusButtons = [
+    { status: "open", label: "Open Event", tone: "bg-blue-600 hover:bg-blue-700" },
     { status: "ongoing", label: "Mark Ongoing", tone: "bg-amber-600 hover:bg-amber-700" },
     { status: "completed", label: "Complete Event", tone: "bg-emerald-600 hover:bg-emerald-700" },
   ];

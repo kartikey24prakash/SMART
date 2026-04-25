@@ -193,10 +193,14 @@ export default function CoordinatorDashboard() {
             <button
               type="button"
               disabled={actionLoading || !selectedEvent}
-              onClick={() => actions.updateEventStatus("ongoing")}
+              onClick={() =>
+                actions.updateEventStatus(
+                  selectedEvent?.status === "draft" ? "open" : "ongoing"
+                )
+              }
               className="mt-6 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Mark Event Ongoing
+              {selectedEvent?.status === "draft" ? "Open Event Registration" : "Mark Event Ongoing"}
             </button>
           </div>
         </div>

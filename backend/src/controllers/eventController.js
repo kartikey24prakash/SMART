@@ -4,6 +4,7 @@ import Event from "../model/Event.js";
 import Registration from "../model/Registration.js";
 import Team from "../model/Team.js";
 import User from "../model/User.js";
+import { normalizeEventDatePayload, validateEventDateOrder } from "../utils/eventDates.js";
 
 const ADMIN_EDITABLE_FIELDS = ["name", "description"];
 const COORDINATOR_EDITABLE_FIELDS = [
@@ -34,19 +35,7 @@ const validateEventPayload = (payload) => {
     return "maxTeamSize cannot be smaller than minTeamSize";
   }
 
-  const start = payload.registrationStartDate ? new Date(payload.registrationStartDate) : null;
-  const end = payload.registrationEndDate ? new Date(payload.registrationEndDate) : null;
-  const eventDate = payload.eventDate ? new Date(payload.eventDate) : null;
-
-  if (start && end && end < start) {
-    return "registrationEndDate must be after registrationStartDate";
-  }
-
-  if (end && eventDate && eventDate < end) {
-    return "eventDate must be after registrationEndDate";
-  }
-
-  return null;
+  return validateEventDateOrder(payload);
 };
 
 const enrichEventsWithCounts = async (events) => {
@@ -185,7 +174,9 @@ export const updateEvent = async (req, res, next) => {
 
 export const updateEventConfiguration = async (req, res, next) => {
   try {
-    const payload = pickFields(req.body, COORDINATOR_EDITABLE_FIELDS);
+    const payload = normalizeEventDatePayload(
+      pickFields(req.body, COORDINATOR_EDITABLE_FIELDS)
+    );
     const validationError = validateEventPayload(payload);
 
     if (validationError) {
@@ -298,9 +289,9 @@ export const updateEventLifecycleStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
 
-    if (!["ongoing", "completed"].includes(status)) {
+    if (!["open", "ongoing", "completed"].includes(status)) {
       return res.status(400).json({
-        message: "Status can only be updated to ongoing or completed from this endpoint",
+        message: "Status can only be updated to open, ongoing, or completed from this endpoint",
       });
     }
 
