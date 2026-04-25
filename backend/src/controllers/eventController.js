@@ -4,7 +4,11 @@ import Event from "../model/Event.js";
 import Registration from "../model/Registration.js";
 import Team from "../model/Team.js";
 import User from "../model/User.js";
-import { normalizeEventDatePayload, validateEventDateOrder } from "../utils/eventDates.js";
+import {
+  getRegistrationAvailability,
+  normalizeEventDatePayload,
+  validateEventDateOrder,
+} from "../utils/eventDates.js";
 
 const ADMIN_EDITABLE_FIELDS = ["name", "description"];
 const COORDINATOR_EDITABLE_FIELDS = [
@@ -56,6 +60,7 @@ const enrichEventsWithCounts = async (events) => {
 
       return {
         ...event.toObject(),
+        registration: getRegistrationAvailability(event),
         stats: {
           registrationsCount,
           teamsCount: teams.length,
@@ -138,6 +143,7 @@ export const getEventById = async (req, res, next) => {
 
     res.json({
       event,
+      registration: getRegistrationAvailability(event),
       stats: {
         registrationsCount,
         teamsCount: teams.length,

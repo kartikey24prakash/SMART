@@ -9,6 +9,24 @@ const formatDate = (value) =>
       })
     : "TBD";
 
+const formatDateInputValue = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+};
+
 export default function EventConfiguration({
   event,
   workspace,
@@ -28,13 +46,9 @@ export default function EventConfiguration({
       setForm({
         eventType: event.eventType || "other",
         participationType: event.participationType || "individual",
-        registrationStartDate: event.registrationStartDate
-          ? new Date(event.registrationStartDate).toISOString().slice(0, 10)
-          : "",
-        registrationEndDate: event.registrationEndDate
-          ? new Date(event.registrationEndDate).toISOString().slice(0, 10)
-          : "",
-        eventDate: event.eventDate ? new Date(event.eventDate).toISOString().slice(0, 10) : "",
+        registrationStartDate: formatDateInputValue(event.registrationStartDate),
+        registrationEndDate: formatDateInputValue(event.registrationEndDate),
+        eventDate: formatDateInputValue(event.eventDate),
         venue: event.venue || "",
         maxParticipants: event.maxParticipants || "",
         rules: event.rules || "",

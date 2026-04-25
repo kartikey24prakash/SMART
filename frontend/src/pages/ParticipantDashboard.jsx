@@ -40,42 +40,12 @@ const formatCertificateType = (value) => {
   return "Participation";
 };
 
-const getDateOnlyKey = (value) => {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return [
-    date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, "0"),
-    String(date.getDate()).padStart(2, "0"),
-  ].join("-");
-};
-
 const isEventRegistrationOpen = (event) => {
-  const todayKey = getDateOnlyKey(new Date());
-  const startKey = getDateOnlyKey(event.registrationStartDate);
-  const endKey = getDateOnlyKey(event.registrationEndDate);
-
-  if (!["open", "ongoing"].includes(event.status)) {
-    return false;
+  if (typeof event?.registration?.open === "boolean") {
+    return event.registration.open;
   }
 
-  if (startKey && todayKey < startKey) {
-    return false;
-  }
-
-  if (endKey && todayKey > endKey) {
-    return false;
-  }
-
-  return true;
+  return ["open", "ongoing"].includes(event?.status);
 };
 
 const statusStyles = {
@@ -474,6 +444,12 @@ export default function ParticipantDashboard() {
     setActionLoading(true);
     setError("");
 
+    if (!isEventRegistrationOpen(event)) {
+      setError(event.registration?.reason || "Registration is not open for this event.");
+      setActionLoading(false);
+      return;
+    }
+
     try {
       if (event.participationType === "team") {
         setTeamSearchResults([]);
@@ -521,6 +497,7 @@ export default function ParticipantDashboard() {
 
   const handleTeamSearch = async (studentId, eventId) => {
     setTeamSearchLoading(true);
+    setError("");
 
     try {
       const data = await searchParticipants(studentId, eventId);
@@ -614,9 +591,10 @@ export default function ParticipantDashboard() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            {filteredEvents.slice(0, 4).map((event) => {
+        {filteredEvents.slice(0, 4).map((event) => {
               const eventId = event._id;
               const enrolled = enrolledEventIds.has(eventId);
+              const registrationOpen = isEventRegistrationOpen(event);
 
               return (
                 <div key={eventId} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
@@ -635,12 +613,14 @@ export default function ParticipantDashboard() {
                   </div>
                   <button
                     type="button"
-                    disabled={actionLoading || enrolled}
+                    disabled={actionLoading || enrolled || !registrationOpen}
                     onClick={() => handleRegister(event)}
                     className="mt-4 w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
                   >
                     {enrolled
                       ? "Already Enrolled"
+                      : !registrationOpen
+                        ? "Registration Closed"
                       : event.participationType === "team"
                         ? "Create Team"
                         : "Register"}
@@ -723,6 +703,7 @@ export default function ParticipantDashboard() {
         {filteredEvents.map((event) => {
           const enrolled = enrolledEventIds.has(event._id);
           const participantCount = event.stats?.totalParticipants || 0;
+          const registrationOpen = isEventRegistrationOpen(event);
 
           return (
             <div key={event._id} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -764,12 +745,14 @@ export default function ParticipantDashboard() {
 
               <button
                 type="button"
-                disabled={actionLoading || enrolled}
+                disabled={actionLoading || enrolled || !registrationOpen}
                 onClick={() => handleRegister(event)}
                 className="mt-5 w-full rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
               >
                 {enrolled
                   ? "Already Enrolled"
+                  : !registrationOpen
+                    ? "Registration Closed"
                   : event.participationType === "team"
                     ? "Create Team"
                     : "Register Now"}

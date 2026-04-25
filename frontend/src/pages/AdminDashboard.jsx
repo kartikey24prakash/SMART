@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
+import AdminManagement from "../components/admin/AdminManagement";
 import AnalyticsDashboard from "../components/admin/AnalyticsDashboard";
 import CoordinatorAssignment from "../components/admin/CoordinatorAssignment";
 import CoordinatorManagement from "../components/admin/CoordinatorManagement";
@@ -9,7 +10,7 @@ import EventForm from "../components/admin/EventForm";
 import EventList from "../components/admin/EventList";
 import DashboardShell from "../components/common/DashboardShell";
 import { getCurrentUser, logoutUser } from "../services/authService";
-import { getCoordinators, createCoordinator } from "../services/adminService";
+import { createAdmin, createCoordinator, getAdmins, getCoordinators } from "../services/adminService";
 import {
   assignCoordinatorToEvent,
   createEvent,
@@ -26,6 +27,7 @@ import {
 
 const NAV = [
   { id: "events", label: "Events", sub: "Manage events" },
+  { id: "admins", label: "Admins", sub: "Manage admins" },
   { id: "coordinators", label: "Coordinators", sub: "Manage staff" },
   { id: "assignment", label: "Assignment", sub: "Assign coordinators" },
   { id: "analytics", label: "Analytics", sub: "System overview" },
@@ -56,6 +58,7 @@ export default function AdminDashboard() {
   const [editEvent, setEditEvent] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [events, setEvents] = useState([]);
+  const [admins, setAdmins] = useState([]);
   const [coordinators, setCoordinators] = useState([]);
   const [overview, setOverview] = useState(null);
   const [eventsReport, setEventsReport] = useState([]);
@@ -80,6 +83,7 @@ export default function AdminDashboard() {
       const [
         { user },
         eventsData,
+        adminsData,
         coordinatorsData,
         overviewData,
         eventsReportData,
@@ -88,6 +92,7 @@ export default function AdminDashboard() {
         await Promise.all([
           getCurrentUser(),
           getEvents(),
+          getAdmins(),
           getCoordinators(),
           getOverviewAnalytics(),
           getAdminEventsReport(),
@@ -101,6 +106,7 @@ export default function AdminDashboard() {
 
       setCurrentUser(user);
       setEvents(eventsData.events || []);
+      setAdmins(adminsData.users || []);
       setCoordinators(coordinatorsData.users || []);
       setOverview(overviewData);
       setEventsReport(eventsReportData.events || []);
@@ -180,6 +186,20 @@ export default function AdminDashboard() {
     await loadAdminData();
   };
 
+  const handleCreateAdmin = async (form) => {
+    await createAdmin({
+      name: form.name,
+      email: form.email,
+      password: form.password,
+      role: "admin",
+      gender: form.gender,
+      institution: form.institution,
+      adminId: form.adminId,
+      contactNumber: form.contactNumber,
+    });
+    await loadAdminData();
+  };
+
   const handleAssignCoordinator = async (eventId, coordinatorId) => {
     setSaving(true);
     try {
@@ -232,6 +252,14 @@ export default function AdminDashboard() {
             onEdit={handleEdit}
             onCreate={handleCreate}
             onDelete={handleDeleteEvent}
+          />
+        );
+      case "admins":
+        return (
+          <AdminManagement
+            admins={admins}
+            onCreateAdmin={handleCreateAdmin}
+            creating={saving}
           />
         );
       case "coordinators":

@@ -34,10 +34,17 @@ export const normalizeEventDatePayload = (payload) => {
 };
 
 export const isRegistrationOpen = (event) => {
+  return getRegistrationAvailability(event).open;
+};
+
+export const getRegistrationAvailability = (event) => {
   const now = new Date();
 
   if (event.status && !["open", "ongoing"].includes(event.status)) {
-    return false;
+    return {
+      open: false,
+      reason: "Event is not open for registration",
+    };
   }
 
   const todayKey = getDateOnlyKey(now);
@@ -45,14 +52,23 @@ export const isRegistrationOpen = (event) => {
   const endKey = getDateOnlyKey(event.registrationEndDate);
 
   if (startKey && todayKey < startKey) {
-    return false;
+    return {
+      open: false,
+      reason: "Registration has not started yet",
+    };
   }
 
   if (endKey && todayKey > endKey) {
-    return false;
+    return {
+      open: false,
+      reason: "Registration has closed",
+    };
   }
 
-  return true;
+  return {
+    open: true,
+    reason: "Registration is open",
+  };
 };
 
 export const validateEventDateOrder = (payload) => {
