@@ -103,12 +103,22 @@ function TeamModal({
   const [studentId, setStudentId] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [error, setError] = useState("");
+  const minTeamSize = event?.teamConfig?.minTeamSize || 1;
+  const maxTeamSize = event?.teamConfig?.maxTeamSize || 1;
+  const totalMembers = selectedMembers.length + 1;
+  const hasReachedMaxMembers = totalMembers >= maxTeamSize;
+  const meetsTeamSizeRequirement = totalMembers >= minTeamSize && totalMembers <= maxTeamSize;
 
   if (!event) {
     return null;
   }
 
   const addMember = (user) => {
+    if (hasReachedMaxMembers) {
+      setError(`You can add up to ${maxTeamSize} members for this event.`);
+      return;
+    }
+
     setSelectedMembers((current) => {
       if (current.some((member) => member._id === user._id)) {
         return current;
@@ -209,7 +219,7 @@ function TeamModal({
                   </div>
                 </div>
                 <div className="rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">
-                  {selectedMembers.length + 1} members total
+                  {totalMembers} members total
                 </div>
               </div>
 
@@ -254,10 +264,10 @@ function TeamModal({
                         <button
                           type="button"
                           onClick={() => addMember(user)}
-                          disabled={alreadyAdded}
+                          disabled={alreadyAdded || hasReachedMaxMembers}
                           className="rounded-xl border border-violet-200 px-3 py-2 text-xs font-semibold text-violet-700 transition hover:bg-violet-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
                         >
-                          {alreadyAdded ? "Added" : "Add"}
+                          {alreadyAdded ? "Added" : hasReachedMaxMembers ? "Limit Reached" : "Add"}
                         </button>
                       </div>
                     );
@@ -271,8 +281,7 @@ function TeamModal({
             <div className="mb-4">
               <div className="text-sm font-bold text-slate-900">Selected team</div>
               <div className="text-xs text-slate-500">
-                Event rule: {event.teamConfig?.minTeamSize || 1} to{" "}
-                {event.teamConfig?.maxTeamSize || 1} members
+                Event rule: {minTeamSize} to {maxTeamSize} members
               </div>
             </div>
 
@@ -306,11 +315,16 @@ function TeamModal({
 
             <button
               type="submit"
-              disabled={creating}
+              disabled={creating || !meetsTeamSizeRequirement}
               className="mt-5 w-full rounded-2xl bg-violet-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:bg-slate-300"
             >
               {creating ? "Creating team..." : "Create Team"}
             </button>
+            {!meetsTeamSizeRequirement ? (
+              <div className="mt-3 text-xs text-amber-600">
+                Team must contain between {minTeamSize} and {maxTeamSize} members.
+              </div>
+            ) : null}
           </div>
         </form>
       </div>

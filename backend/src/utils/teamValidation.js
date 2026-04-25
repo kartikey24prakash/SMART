@@ -32,6 +32,9 @@ export const validateTeamAgainstEvent = (users, event) => {
   );
 
   return {
+    size,
+    minSize,
+    maxSize,
     meetsTeamSizeRequirement,
     meetsGenderRequirement,
   };

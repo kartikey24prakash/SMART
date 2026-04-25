@@ -23,6 +23,8 @@ const sanitizeUser = (user) => ({
   createdAt: user.createdAt,
 });
 
+const normalizeStudentId = (value) => value?.trim().toUpperCase();
+
 export const register = async (req, res, next) => {
   try {
     const {
@@ -34,6 +36,7 @@ export const register = async (req, res, next) => {
       studentId,
       contactNumber,
     } = req.body;
+    const normalizedStudentId = normalizeStudentId(studentId);
 
     if (req.body.role && req.body.role !== "participant") {
       return res.status(403).json({
@@ -41,9 +44,22 @@ export const register = async (req, res, next) => {
       });
     }
 
+    if (!normalizedStudentId) {
+      return res.status(400).json({ message: "Student ID is required" });
+    }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({ message: "Email already registered" });
+    }
+
+    const existingStudent = await User.findOne({
+      role: "participant",
+      studentId: normalizedStudentId,
+    });
+
+    if (existingStudent) {
+      return res.status(409).json({ message: "Student ID already registered" });
     }
 
     const user = await User.create({
@@ -53,7 +69,7 @@ export const register = async (req, res, next) => {
       role: "participant",
       gender,
       institution,
-      studentId,
+      studentId: normalizedStudentId,
       contactNumber,
     });
 
@@ -65,6 +81,10 @@ export const register = async (req, res, next) => {
       message: "Participant registered successfully",
     });
   } catch (error) {
+    if (error?.code === 11000 && error?.keyPattern?.studentId) {
+      return res.status(409).json({ message: "Student ID already registered" });
+    }
+
     next(error);
   }
 };

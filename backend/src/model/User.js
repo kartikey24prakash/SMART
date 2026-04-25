@@ -1,6 +1,15 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
+const normalizeStudentId = (value) => {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  const normalized = value.trim().toUpperCase();
+  return normalized || undefined;
+};
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -37,6 +46,10 @@ const userSchema = new mongoose.Schema(
     studentId: {
       type: String,
       trim: true,
+      set: normalizeStudentId,
+      required: function requireParticipantStudentId() {
+        return this.role === "participant";
+      },
     },
     adminId: {
       type: String,
@@ -69,6 +82,17 @@ userSchema.pre("save", async function savePassword() {
 userSchema.methods.comparePassword = function comparePassword(password) {
   return bcrypt.compare(password, this.password);
 };
+
+userSchema.index(
+  { studentId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      role: "participant",
+      studentId: { $exists: true, $type: "string" },
+    },
+  }
+);
 
 const User = mongoose.model("User", userSchema);
 

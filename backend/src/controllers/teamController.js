@@ -103,7 +103,9 @@ export const createTeam = async (req, res, next) => {
 
     const validation = validateTeamAgainstEvent(users, event);
     if (!validation.meetsTeamSizeRequirement) {
-      return res.status(400).json({ message: "Team size does not match event rules" });
+      return res.status(400).json({
+        message: `Team must contain between ${validation.minSize} and ${validation.maxSize} members`,
+      });
     }
 
     if (!validation.meetsGenderRequirement) {
