@@ -24,11 +24,12 @@ import {
 import { clearWinner, getWinners, markWinner } from "../controllers/winnerController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import ensureCoordinatorEventAccess from "../middleware/eventAccessMiddleware.js";
+import optionalAuthMiddleware from "../middleware/optionalAuthMiddleware.js";
 import allowRoles from "../middleware/roleMiddleware.js";
 
 const router = Router();
 
-router.get("/", getEvents);
+router.get("/", optionalAuthMiddleware, getEvents);
 router.get("/:id", getEventById);
 
 router.post("/", authMiddleware, allowRoles("admin"), createEvent);

@@ -133,7 +133,7 @@ export default function CoordinatorDashboard() {
         ))}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+      <div className="grid gap-6 xl:grid-cols-[1fr]">
         <div className="space-y-6">
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
@@ -163,7 +163,7 @@ export default function CoordinatorDashboard() {
           </div>
         </div>
 
-        <div className="space-y-6">
+        {/* <div className="space-y-6">
           <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-violet-900 p-6 text-white shadow-lg">
             <div className="text-xs font-bold uppercase tracking-[0.24em] text-violet-200">
               Event Pulse
@@ -203,7 +203,7 @@ export default function CoordinatorDashboard() {
               {selectedEvent?.status === "draft" ? "Open Event Registration" : "Mark Event Ongoing"}
             </button>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
