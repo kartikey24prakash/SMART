@@ -8,6 +8,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import certificateRoutes from "./routes/certificateRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
+import knowledgeRoutes from "./routes/knowledgeRoutes.js";
 import registrationRoutes from "./routes/registrationRoutes.js";
 import teamRoutes from "./routes/teamRoutes.js";
 
@@ -47,6 +48,7 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/knowledge", knowledgeRoutes);
 app.use("/api/registrations", registrationRoutes);
 app.use("/api/teams", teamRoutes);
 app.use("/api/analytics", analyticsRoutes);
